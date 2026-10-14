@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     # third-party
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_celery_beat",
     # local
@@ -132,6 +133,8 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+    # Without this, a rotated-out refresh token stays valid until it expires.
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 
