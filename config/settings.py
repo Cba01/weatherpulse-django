@@ -162,6 +162,16 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 
+# Beat stores schedules in the DB (editable in the admin). Entries below are
+# copied into it when beat starts, so the default schedule lives in git.
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "check-weather-alerts-every-30-min": {
+        "task": "weather.tasks.check_weather_alerts",
+        "schedule": timedelta(minutes=30),
+    },
+}
+
 
 # --- OpenWeatherMap ----------------------------------------------------------
 
