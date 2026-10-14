@@ -22,6 +22,24 @@ class CitySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "country", "lat", "lon"]
 
 
+class CurrentWeatherQuerySerializer(serializers.Serializer):
+    """Validates ?lat=&lon= for the current-weather endpoint.
+
+    A plain Serializer (not a ModelSerializer): it isn't tied to any model,
+    it only declares and validates input fields.
+    """
+
+    lat = serializers.FloatField(min_value=-90, max_value=90)
+    lon = serializers.FloatField(min_value=-180, max_value=180)
+
+
+class CitySearchQuerySerializer(serializers.Serializer):
+    """Validates ?q=&limit= for the city-search endpoint."""
+
+    q = serializers.CharField(min_length=2, max_length=150, trim_whitespace=True)
+    limit = serializers.IntegerField(min_value=1, max_value=5, default=5)
+
+
 class FavoriteCitySerializer(serializers.ModelSerializer):
     # Output: the full city object, so the frontend doesn't need a second request.
     city = CitySerializer(read_only=True)
@@ -40,6 +58,16 @@ class FavoriteCitySerializer(serializers.ModelSerializer):
         # via serializer.save(user=...). It must never come from the payload.
         fields = ["id", "city", "city_id", "added_at"]
         read_only_fields = ["id", "added_at"]
+
+    def validate_city_id(self, city):
+        """Reject duplicates with a 400 instead of letting the DB constraint
+        raise IntegrityError (500). `user` isn't a field here, so DRF can't
+        build a UniqueTogetherValidator for us; the view passes the request
+        in the serializer context."""
+        user = self.context["request"].user
+        if FavoriteCity.objects.filter(user=user, city=city).exists():
+            raise serializers.ValidationError("This city is already in your favorites.")
+        return city
 
 
 class WeatherAlertSerializer(serializers.ModelSerializer):
