@@ -296,3 +296,24 @@ input {
   margin: 0.15rem 0 0;
   font-size: 1.05rem;
 }
+
+/* --- Weather map --- */
+
+.weather-map {
+  padding: 0;
+  overflow: hidden; /* clip the map's square corners to the card radius */
+  /* Leaflet stacks its panes and controls with z-index up to 1000. A new
+     stacking context keeps them inside the map, so they can't cover the
+     city search dropdown. */
+  isolation: isolate;
+}
+
+.weather-map .leaflet-container {
+  height: 340px;
+  font: inherit;
+}
+
+.weather-map__popup {
+  display: grid;
+  gap: 0.2rem;
+}

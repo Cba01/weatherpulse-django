@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
-import type { City } from "../api/types";
+import type { Place } from "../api/types";
 import { useAuth } from "../auth/useAuth";
 import { CitySearch } from "../components/CitySearch";
 import { WeatherBackground } from "../components/WeatherBackground";
 import { WeatherCard } from "../components/WeatherCard";
+import { WeatherMap } from "../components/WeatherMap";
 import { useCurrentWeather } from "../hooks/useCurrentWeather";
 import { getWeatherTheme } from "../theme/weatherTheme";
 
-const LAST_CITY_KEY = "weatherpulse.lastCity";
+// Key kept from when only searched cities were stored: a saved City is a valid Place.
+const LAST_PLACE_KEY = "weatherpulse.lastCity";
 
-function loadLastCity(): City | null {
+function loadLastPlace(): Place | null {
   try {
-    const stored = localStorage.getItem(LAST_CITY_KEY);
-    return stored ? (JSON.parse(stored) as City) : null;
+    const stored = localStorage.getItem(LAST_PLACE_KEY);
+    return stored ? (JSON.parse(stored) as Place) : null;
   } catch {
     return null;
   }
@@ -23,8 +25,8 @@ function loadLastCity(): City | null {
 export function HomePage() {
   const { user, status, logout } = useAuth();
   // Lazy initializer: read localStorage once, not on every render.
-  const [city, setCity] = useState<City | null>(loadLastCity);
-  const { weather, weatherCity, error, loading } = useCurrentWeather(city);
+  const [place, setPlace] = useState<Place | null>(loadLastPlace);
+  const { weather, weatherPlace, error, loading } = useCurrentWeather(place);
   const theme = weather ? getWeatherTheme(weather) : "default";
 
   // One attribute on <html> drives every themed CSS custom property.
@@ -35,10 +37,10 @@ export function HomePage() {
     };
   }, [theme]);
 
-  function selectCity(selected: City) {
-    setCity(selected);
+  function selectPlace(selected: Place) {
+    setPlace(selected);
     try {
-      localStorage.setItem(LAST_CITY_KEY, JSON.stringify(selected));
+      localStorage.setItem(LAST_PLACE_KEY, JSON.stringify(selected));
     } catch {
       // Storage unavailable (private mode): the choice just won't persist.
     }
@@ -67,12 +69,14 @@ export function HomePage() {
       </header>
 
       <main className="home">
-        <CitySearch onSelect={selectCity} />
+        <CitySearch onSelect={selectPlace} />
 
         {error && <p className="home__error">{error}</p>}
-        {weatherCity && weather && <WeatherCard city={weatherCity} weather={weather} updating={loading} />}
-        {city && !weather && loading && <p className="home__hint">Cargando clima…</p>}
-        {!city && <p className="home__hint">Busca una ciudad para ver su clima.</p>}
+        {weatherPlace && weather && <WeatherCard place={weatherPlace} weather={weather} updating={loading} />}
+        {place && !weather && loading && <p className="home__hint">Cargando clima…</p>}
+        {!place && <p className="home__hint">Busca una ciudad o haz clic en el mapa para ver su clima.</p>}
+
+        <WeatherMap place={place} weather={weatherPlace === place ? weather : null} onPick={selectPlace} />
       </main>
     </>
   );

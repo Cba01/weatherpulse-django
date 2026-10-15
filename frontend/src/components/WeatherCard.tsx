@@ -1,21 +1,23 @@
 import { motion } from "motion/react";
 
-import type { City, CurrentWeather } from "../api/types";
-import { capitalize, formatCityTime } from "../utils/format";
+import type { CurrentWeather, Place } from "../api/types";
+import { capitalize, formatCityTime, placeLabel } from "../utils/format";
 
 type Props = {
-  city: City;
+  place: Place;
   weather: CurrentWeather;
   updating: boolean;
 };
 
-export function WeatherCard({ city, weather, updating }: Props) {
+export function WeatherCard({ place, weather, updating }: Props) {
   const condition = weather.weather[0];
+  const { name, country } = placeLabel(place, weather);
 
   return (
-    // key={city.id}: a new city remounts the card, replaying the entrance animation.
+    // A new place remounts the card, replaying the entrance animation.
+    // Keyed by coordinates because map points have no id.
     <motion.article
-      key={city.id}
+      key={`${place.lat},${place.lon}`}
       className="weather-card card"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: updating ? 0.6 : 1, y: 0 }}
@@ -23,7 +25,8 @@ export function WeatherCard({ city, weather, updating }: Props) {
     >
       <header>
         <h2>
-          {city.name}, <span>{city.country}</span>
+          {name}
+          {country && <span>, {country}</span>}
         </h2>
         {condition && <p className="weather-card__description">{capitalize(condition.description)}</p>}
       </header>
