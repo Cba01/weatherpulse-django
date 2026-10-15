@@ -1,12 +1,14 @@
-/* Neutral base. Weather-driven theming arrives in the next subphase by
-   overriding these custom properties. */
+/* Theme = one data-theme attribute on <html> (set by HomePage) that
+   overrides these custom properties. The page gradients live in
+   .weather-bg__layer--* below so they can crossfade. */
 :root {
   --bg: #f4f6f9;
-  --surface: #ffffff;
+  --surface: rgb(255 255 255 / 0.85);
   --text: #1c2430;
   --muted: #5d6b7e;
   --accent: #2f6fdb;
   --danger: #c0392b;
+  --border: #cdd5df;
   --radius: 12px;
 
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -18,10 +20,46 @@
   box-sizing: border-box;
 }
 
+[data-theme="clear"] {
+  --bg: #6bb6f5;
+  --text: #10223a;
+  --muted: #2f4a66;
+  --accent: #e07b00;
+}
+
+[data-theme="cloudy"] {
+  --bg: #a3b1bd;
+  --text: #1d2833;
+  --muted: #3f4d5a;
+  --accent: #3d5a80;
+}
+
+[data-theme="rain"] {
+  --bg: #3a4a5c;
+  --surface: rgb(30 41 54 / 0.7);
+  --text: #eef3f8;
+  --muted: #b5c3d1;
+  --accent: #7cc4ff;
+  --danger: #ff8a7a;
+  --border: #56687c;
+}
+
+[data-theme="night"] {
+  --bg: #0b1026;
+  --surface: rgb(20 27 58 / 0.75);
+  --text: #e6ebff;
+  --muted: #a3acd6;
+  --accent: #b39cff;
+  --danger: #ff8a7a;
+  --border: #39427a;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
+  color: var(--text);
+  transition: color 0.8s ease;
 }
 
 a {
@@ -47,7 +85,7 @@ input {
   font: inherit;
   width: 100%;
   padding: 0.55rem 0.7rem;
-  border: 1px solid #cdd5df;
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
@@ -57,7 +95,43 @@ input {
   background: var(--surface);
   border-radius: var(--radius);
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgb(0 0 0 / 0.06);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.08);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.8s ease;
+}
+
+/* --- Weather background (crossfaded by WeatherBackground.tsx) --- */
+
+.weather-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.weather-bg__layer {
+  position: absolute;
+  inset: 0;
+}
+
+.weather-bg__layer--default {
+  background: linear-gradient(180deg, #e9eef5, #f7f9fc);
+}
+
+.weather-bg__layer--clear {
+  background: linear-gradient(180deg, #3d9cf0 0%, #8fcbff 60%, #ffe3a3 100%);
+}
+
+.weather-bg__layer--cloudy {
+  background: linear-gradient(180deg, #7f8f9c 0%, #b9c4ce 60%, #dfe5ea 100%);
+}
+
+.weather-bg__layer--rain {
+  background: linear-gradient(180deg, #232f3c 0%, #3a4a5c 55%, #5f7386 100%);
+}
+
+.weather-bg__layer--night {
+  background: radial-gradient(circle at 75% 15%, #2a3570 0%, transparent 45%),
+    linear-gradient(180deg, #05081a 0%, #0b1026 50%, #1f2a52 100%);
 }
 
 /* --- Auth pages --- */
@@ -117,6 +191,108 @@ input {
 }
 
 .home {
-  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 1.25rem;
+  width: min(100% - 2rem, 560px);
+  margin: 1rem auto 3rem;
+}
+
+.home__hint {
   color: var(--muted);
+  text-align: center;
+}
+
+.home__error {
+  color: var(--danger);
+}
+
+/* --- City search --- */
+
+.city-search {
+  position: relative;
+}
+
+.city-search input {
+  padding: 0.75rem 1rem;
+  font-size: 1.05rem;
+}
+
+.city-search__status {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.city-search__results {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+}
+
+.city-search__results button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+}
+
+.city-search__results button:hover,
+.city-search__results button:focus-visible {
+  background: rgb(127 127 127 / 0.15);
+}
+
+.city-search__results span {
+  color: var(--muted);
+}
+
+/* --- Weather card --- */
+
+.weather-card header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.weather-card header span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.weather-card__description {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.weather-card__main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weather-card__temp {
+  margin: 0;
+  font-size: 4rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.weather-card__details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+}
+
+.weather-card__details dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.weather-card__details dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.05rem;
 }

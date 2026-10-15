@@ -78,6 +78,9 @@ def get_current_weather(lat: float, lon: float) -> dict:
     if cached is not None:
         return cached
 
-    data = _get("/data/2.5/weather", {"lat": lat, "lon": lon, "units": "metric"})
+    # lang=es: descriptions ("nubes", "lluvia ligera") match the Spanish UI.
+    data = _get(
+        "/data/2.5/weather", {"lat": lat, "lon": lon, "units": "metric", "lang": "es"}
+    )
     cache.set(cache_key, data, CURRENT_WEATHER_CACHE_TTL_SECONDS)
     return data
