@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 
 import type { Place } from "../api/types";
 import { useAuth } from "../auth/useAuth";
 import { CitySearch } from "../components/CitySearch";
+import { FavoriteButton } from "../components/FavoriteButton";
+import { TopBar } from "../components/TopBar";
 import { WeatherBackground } from "../components/WeatherBackground";
 import { WeatherCard } from "../components/WeatherCard";
 import { WeatherMap } from "../components/WeatherMap";
 import { useCurrentWeather } from "../hooks/useCurrentWeather";
+import { useFavorites } from "../hooks/useFavorites";
 import { getWeatherTheme } from "../theme/weatherTheme";
 
 // Key kept from when only searched cities were stored: a saved City is a valid Place.
@@ -23,7 +25,8 @@ function loadLastPlace(): Place | null {
 }
 
 export function HomePage() {
-  const { user, status, logout } = useAuth();
+  const { user } = useAuth();
+  const favorites = useFavorites(user?.id ?? null);
   // Lazy initializer: read localStorage once, not on every render.
   const [place, setPlace] = useState<Place | null>(loadLastPlace);
   const { weather, weatherPlace, error, loading } = useCurrentWeather(place);
@@ -37,6 +40,19 @@ export function HomePage() {
     };
   }, [theme]);
 
+  // Only stored cities (with an id) can be favorites: the API references a City row.
+  function favoriteAction(cityId: number | undefined) {
+    if (cityId === undefined || !user || favorites.loading) return null;
+    const favorite = favorites.findByCity(cityId);
+    return (
+      <FavoriteButton
+        active={favorite !== undefined}
+        busy={favorites.busyCityId === cityId}
+        onToggle={() => (favorite ? favorites.remove(favorite) : favorites.add(cityId))}
+      />
+    );
+  }
+
   function selectPlace(selected: Place) {
     setPlace(selected);
     try {
@@ -49,30 +65,21 @@ export function HomePage() {
   return (
     <>
       <WeatherBackground theme={theme} />
-      <header className="topbar">
-        <strong>WeatherPulse</strong>
-        {status === "loading" && <span>Cargando…</span>}
-        {status === "authenticated" && user && (
-          <span className="session">
-            Hola, {user.username}
-            <button type="button" onClick={logout}>
-              Cerrar sesión
-            </button>
-          </span>
-        )}
-        {status === "anonymous" && (
-          <span className="session">
-            <Link to="/login">Iniciar sesión</Link>
-            <Link to="/register">Registrarse</Link>
-          </span>
-        )}
-      </header>
+      <TopBar />
 
       <main className="home">
         <CitySearch onSelect={selectPlace} />
 
         {error && <p className="home__error">{error}</p>}
-        {weatherPlace && weather && <WeatherCard place={weatherPlace} weather={weather} updating={loading} />}
+        {favorites.error && <p className="home__error">{favorites.error}</p>}
+        {weatherPlace && weather && (
+          <WeatherCard
+            place={weatherPlace}
+            weather={weather}
+            updating={loading}
+            action={favoriteAction(weatherPlace.id)}
+          />
+        )}
         {place && !weather && loading && <p className="home__hint">Cargando clima…</p>}
         {!place && <p className="home__hint">Busca una ciudad o haz clic en el mapa para ver su clima.</p>}
 

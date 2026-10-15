@@ -19,11 +19,26 @@ export type City = {
   lon: number;
 };
 
+/** DRF's PageNumberPagination envelope. `next` is an absolute URL, or null on the last page. */
+export type Paginated<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+export type FavoriteCity = {
+  id: number;
+  city: City;
+  added_at: string; // ISO 8601
+};
+
 /**
  * Anything the weather can be fetched for: a stored City (structurally a
  * Place) or a point clicked on the map, which has no id and no name yet.
  */
 export type Place = {
+  id?: number; // only stored cities have one
   lat: number;
   lon: number;
   name?: string;

@@ -1,18 +1,22 @@
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 
 import { errorMessages } from "../api/errors";
+import type { RedirectState } from "../auth/RequireAuth";
 import { useAuth } from "../auth/useAuth";
 
 export function LoginPage() {
   const { login, status } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Set by RequireAuth when it bounced the user here from a private page.
+  const from = (location.state as RedirectState | null)?.from ?? "/";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  if (status === "authenticated") return <Navigate to="/" replace />;
+  if (status === "authenticated") return <Navigate to={from} replace />;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -20,7 +24,7 @@ export function LoginPage() {
     setErrors([]);
     try {
       await login(username, password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error) {
       setErrors(errorMessages(error));
     } finally {

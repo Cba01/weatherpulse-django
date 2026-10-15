@@ -184,6 +184,29 @@ input {
   padding: 1rem 1.25rem;
 }
 
+.topbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar__nav a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+/* NavLink adds .active to the link matching the current URL. */
+.topbar__nav a.active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.page-status {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+}
+
 .session {
   display: flex;
   align-items: center;
@@ -252,6 +275,13 @@ input {
 
 /* --- Weather card --- */
 
+.weather-card__title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
 .weather-card header h2 {
   margin: 0;
   font-size: 1.5rem;
@@ -316,4 +346,126 @@ input {
 .weather-map__popup {
   display: grid;
   gap: 0.2rem;
+}
+
+/* --- Favorites --- */
+
+.favorite-button {
+  padding: 0.1rem 0.45rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  background: transparent;
+  color: var(--accent);
+}
+
+.favorites {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100% - 2rem, 900px);
+  margin: 1rem auto 3rem;
+}
+
+.favorites h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.favorites__help {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.favorites__list {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favorites__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.favorites__list label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.favorites__list input {
+  width: auto;
+}
+
+.favorites__list span {
+  color: var(--muted);
+}
+
+.favorites__remove {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--danger);
+}
+
+/* --- Comparison --- */
+
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.comparison__column h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.comparison__column h3 span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.comparison__badge {
+  display: inline-block;
+  margin: 0.4rem 0 0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.comparison__temp {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.comparison__description {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+}
+
+.comparison__column dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.75rem;
+  margin: 1rem 0 0;
+}
+
+.comparison__column dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.comparison__column dd {
+  margin: 0;
+  text-align: right;
 }

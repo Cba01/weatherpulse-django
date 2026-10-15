@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import type { ReactNode } from "react";
 
 import type { CurrentWeather, Place } from "../api/types";
 import { capitalize, formatCityTime, placeLabel } from "../utils/format";
@@ -7,9 +8,11 @@ type Props = {
   place: Place;
   weather: CurrentWeather;
   updating: boolean;
+  /** Optional control shown next to the title (e.g. the favorite star). */
+  action?: ReactNode;
 };
 
-export function WeatherCard({ place, weather, updating }: Props) {
+export function WeatherCard({ place, weather, updating, action }: Props) {
   const condition = weather.weather[0];
   const { name, country } = placeLabel(place, weather);
 
@@ -24,10 +27,13 @@ export function WeatherCard({ place, weather, updating }: Props) {
       transition={{ duration: 0.4 }}
     >
       <header>
-        <h2>
-          {name}
-          {country && <span>, {country}</span>}
-        </h2>
+        <div className="weather-card__title">
+          <h2>
+            {name}
+            {country && <span>, {country}</span>}
+          </h2>
+          {action}
+        </div>
         {condition && <p className="weather-card__description">{capitalize(condition.description)}</p>}
       </header>
 
