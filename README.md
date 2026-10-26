@@ -1,100 +1,101 @@
 # WeatherPulse
 
-Fullstack weather app whose UI theme changes with the current weather.
-Search cities or pick a point on the map, save favorites and compare them
-side by side, and set alerts (rain, temperature above/below a threshold)
-that a scheduled job checks every 30 minutes.
+Aplicación fullstack del clima cuyo tema visual cambia según el clima actual.
+Busca ciudades o elige un punto en el mapa, guarda favoritos y compáralos
+lado a lado, y crea alertas (lluvia, temperatura por encima o por debajo de
+un umbral) que una tarea programada revisa cada 30 minutos.
 
-**Stack:** Django 6 + Django REST Framework, PostgreSQL, Redis (cache and
-Celery broker), Celery + Celery Beat, JWT auth (simplejwt with token
-blacklist) · React 19 + TypeScript + Vite, Motion, Leaflet · OpenWeatherMap API.
+**Stack:** Django 6 + Django REST Framework, PostgreSQL, Redis (caché y
+broker de Celery), Celery + Celery Beat, autenticación JWT (simplejwt con
+blacklist de tokens) · React 19 + TypeScript + Vite, Motion, Leaflet · API de
+OpenWeatherMap.
 
-## Requirements
+## Requisitos
 
 - Python 3.12+
 - Node.js 20+
-- Docker Desktop (runs PostgreSQL and Redis)
-- A free [OpenWeatherMap](https://openweathermap.org/api) API key
+- Docker Desktop (ejecuta PostgreSQL y Redis)
+- Una API key gratuita de [OpenWeatherMap](https://openweathermap.org/api)
 
-## Setup (first time)
+## Configuración (primera vez)
 
 ```bash
-# 1. Services: PostgreSQL on 5432, Redis on 6379
+# 1. Servicios: PostgreSQL en 5432, Redis en 6379
 docker compose up -d
 
 # 2. Backend
 python -m venv venv
 venv\Scripts\activate            # Windows (macOS/Linux: source venv/bin/activate)
 pip install -r requirements.txt
-cp .env.example .env             # then edit SECRET_KEY and OPENWEATHER_API_KEY
+cp .env.example .env             # luego edita SECRET_KEY y OPENWEATHER_API_KEY
 python manage.py migrate
-python manage.py createsuperuser # optional, for /admin/
+python manage.py createsuperuser # opcional, para /admin/
 
 # 3. Frontend
 cd frontend
 npm install
 ```
 
-Generate a `SECRET_KEY` with:
+Para generar una `SECRET_KEY`:
 
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-## Running locally
+## Ejecución en local
 
-Each process runs in its own terminal (with the venv activated for the
-Python ones). Docker must be running first: `docker compose up -d`.
+Cada proceso corre en su propia terminal (con el venv activado para los de
+Python). Docker debe estar corriendo antes: `docker compose up -d`.
 
-| Process | Command | Needed for |
+| Proceso | Comando | Necesario para |
 | --- | --- | --- |
-| API | `python manage.py runserver` | everything (http://localhost:8000) |
-| Frontend | `cd frontend && npm run dev` | the UI (http://localhost:5173) |
-| Celery worker | `celery -A config worker -l info --pool=solo` | running alert checks |
-| Celery beat | `celery -A config beat -l info` | scheduling alert checks every 30 min |
+| API | `python manage.py runserver` | todo (http://localhost:8000) |
+| Frontend | `cd frontend && npm run dev` | la interfaz (http://localhost:5173) |
+| Worker de Celery | `celery -A config worker -l info --pool=solo` | ejecutar la revisión de alertas |
+| Celery Beat | `celery -A config beat -l info` | programar la revisión de alertas cada 30 min |
 
-The worker and beat are only needed for alerts to be evaluated; the rest of
-the app works without them. `--pool=solo` is required on Windows, where
-Celery's default process pool is not supported.
+El worker y beat solo hacen falta para que se evalúen las alertas; el resto
+de la aplicación funciona sin ellos. `--pool=solo` es obligatorio en Windows,
+donde el pool de procesos por defecto de Celery no está soportado.
 
-The beat schedule is stored in the database (`django_celery_beat`). The
-default entry in `CELERY_BEAT_SCHEDULE` is copied there when beat starts
-and can then be edited from the Django admin.
+La programación de beat se guarda en la base de datos (`django_celery_beat`).
+La entrada por defecto de `CELERY_BEAT_SCHEDULE` se copia ahí al iniciar beat
+y después se puede editar desde el admin de Django.
 
 ## Tests
 
 ```bash
-python -m pytest        # backend; needs PostgreSQL up for the test database
+python -m pytest        # backend; necesita PostgreSQL activo para la base de datos de prueba
 cd frontend && npm run lint && npm run build
 ```
 
-Backend tests mock the OpenWeatherMap API and use an in-memory cache, so
-they need neither Redis nor a real API key.
+Los tests del backend simulan la API de OpenWeatherMap y usan una caché en
+memoria, así que no necesitan Redis ni una API key real.
 
-## API overview
+## Resumen de la API
 
-All endpoints are under `/api/`. Authenticated ones expect
-`Authorization: Bearer <access token>`.
+Todos los endpoints están bajo `/api/`. Los que requieren autenticación
+esperan `Authorization: Bearer <access token>`.
 
-| Method | Endpoint | Auth | Description |
+| Método | Endpoint | Auth | Descripción |
 | --- | --- | --- | --- |
-| POST | `auth/register/` | – | Create an account |
-| POST | `auth/token/` | – | Log in: returns access + refresh tokens |
-| POST | `auth/token/refresh/` | – | Rotate the refresh token |
-| POST | `auth/logout/` | – | Blacklist a refresh token |
-| GET | `auth/me/` | ✓ | Current user |
-| GET | `cities/search/?q=&limit=` | – | Geocode and store matching cities |
-| GET | `weather/current/?lat=&lon=` | – | Current weather (cached 10 min per location) |
-| GET/POST | `favorites/` | ✓ | List / add favorite cities |
-| GET/DELETE | `favorites/<id>/` | ✓ | Retrieve / remove a favorite |
-| GET/POST | `alerts/` | ✓ | List / create weather alerts |
-| GET/PUT/PATCH/DELETE | `alerts/<id>/` | ✓ | Manage one alert |
+| POST | `auth/register/` | – | Crear una cuenta |
+| POST | `auth/token/` | – | Iniciar sesión: devuelve access + refresh token |
+| POST | `auth/token/refresh/` | – | Rotar el refresh token |
+| POST | `auth/logout/` | – | Invalidar un refresh token (blacklist) |
+| GET | `auth/me/` | ✓ | Usuario actual |
+| GET | `cities/search/?q=&limit=` | – | Geocodificar y guardar las ciudades encontradas |
+| GET | `weather/current/?lat=&lon=` | – | Clima actual (en caché 10 min por ubicación) |
+| GET/POST | `favorites/` | ✓ | Listar / agregar ciudades favoritas |
+| GET/DELETE | `favorites/<id>/` | ✓ | Ver / quitar un favorito |
+| GET/POST | `alerts/` | ✓ | Listar / crear alertas del clima |
+| GET/PUT/PATCH/DELETE | `alerts/<id>/` | ✓ | Gestionar una alerta |
 
-## Project layout
+## Estructura del proyecto
 
 ```
-config/      settings, root URLs, Celery app
-users/       custom User model, registration, JWT auth endpoints
-weather/     models, OpenWeatherMap service layer, API views, Celery tasks, tests
-frontend/    React client (see frontend/README.md)
+config/      settings, URLs raíz, app de Celery
+users/       modelo User propio, registro, endpoints de autenticación JWT
+weather/     modelos, capa de servicios de OpenWeatherMap, vistas de la API, tareas de Celery, tests
+frontend/    cliente React (ver frontend/README.md)
 ```
