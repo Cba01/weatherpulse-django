@@ -1,20 +1,20 @@
-# WeatherPulse frontend
+# Frontend de WeatherPulse
 
-React + TypeScript + Vite client for the WeatherPulse Django API.
+Cliente en React + TypeScript + Vite para la API de Django de WeatherPulse.
 
-## Run locally
+## Ejecución en local
 
-Requires the Django API running on `http://localhost:8000` (see the project root).
+Requiere la API de Django corriendo en `http://localhost:8000` (ver la raíz del proyecto).
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # optional: only if the API URL differs
+cp .env.example .env.local   # opcional: solo si la URL de la API es distinta
 npm run dev                  # http://localhost:5173
 ```
 
 ## Scripts
 
-- `npm run dev`: dev server with hot module replacement
-- `npm run build`: type-check (`tsc`) and production build into `dist/`
-- `npm run lint`: lint with oxlint
+- `npm run dev`: servidor de desarrollo con recarga en caliente (HMR)
+- `npm run build`: verificación de tipos (`tsc`) y build de producción en `dist/`
+- `npm run lint`: análisis estático con oxlint
