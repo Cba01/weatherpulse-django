@@ -39,7 +39,7 @@ def _get(path: str, params: dict) -> dict:
         raise ExternalAPIError(f"Could not reach OpenWeatherMap: {exc}") from exc
 
     if response.status_code == 404:
-        raise CityNotFoundError("City not found")
+        raise CityNotFoundError("No se encontró la ubicación.")
     if response.status_code == 401:
         raise ExternalAPIError("OpenWeatherMap rejected the API key")
     if response.status_code == 429:
@@ -55,7 +55,7 @@ def geocode_city(query: str, limit: int = 5) -> list[dict]:
     results = _get("/geo/1.0/direct", {"q": query, "limit": limit})
 
     if not results:
-        raise CityNotFoundError(f"No city found matching '{query}'")
+        raise CityNotFoundError(f"No se encontró ninguna ciudad llamada '{query}'.")
 
     return [
         {

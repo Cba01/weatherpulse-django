@@ -12,7 +12,12 @@ export function TopBar() {
         <NavLink to="/" end>
           Inicio
         </NavLink>
-        {status === "authenticated" && <NavLink to="/favorites">Favoritos</NavLink>}
+        {status === "authenticated" && (
+          <>
+            <NavLink to="/favorites">Favoritos</NavLink>
+            <NavLink to="/alerts">Alertas</NavLink>
+          </>
+        )}
       </nav>
       {status === "loading" && <span>Cargando…</span>}
       {status === "authenticated" && user && (

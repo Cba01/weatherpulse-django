@@ -18,3 +18,25 @@ export function errorMessages(error: unknown): string[] {
       : messages.map((message) => `${field}: ${message}`);
   });
 }
+
+/**
+ * Like errorMessages, but keeps DRF's per-field errors apart so a form can
+ * show each one under its own input. Errors for fields the form doesn't
+ * render (and "detail"/network errors) end up in `general`.
+ */
+export function formErrors<F extends string>(
+  error: unknown,
+  fields: readonly F[],
+): { byField: Partial<Record<F, string>>; general: string[] } {
+  const data = isAxiosError(error) ? (error.response?.data as Record<string, unknown> | undefined) : undefined;
+  if (!data || typeof data !== "object") return { byField: {}, general: errorMessages(error) };
+
+  const byField: Partial<Record<F, string>> = {};
+  const general: string[] = [];
+  for (const [field, value] of Object.entries(data)) {
+    const message = Array.isArray(value) ? value.map(String).join(" ") : String(value);
+    if ((fields as readonly string[]).includes(field)) byField[field as F] = message;
+    else general.push(message);
+  }
+  return { byField, general };
+}

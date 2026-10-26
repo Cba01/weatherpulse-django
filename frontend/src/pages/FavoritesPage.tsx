@@ -37,7 +37,7 @@ export function FavoritesPage() {
   return (
     <>
       <TopBar />
-      <main className="favorites">
+      <main className="page">
         <h1>Mis favoritos</h1>
         {error && <p className="home__error">{error}</p>}
         {loading && <p className="home__hint">Cargando favoritos…</p>}
@@ -69,7 +69,7 @@ export function FavoritesPage() {
                     </label>
                     <button
                       type="button"
-                      className="favorites__remove"
+                      className="danger-button"
                       onClick={() => handleRemove(favorite)}
                       disabled={busyCityId === city.id}
                     >

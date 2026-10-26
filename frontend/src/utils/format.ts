@@ -21,3 +21,22 @@ export function placeLabel(place: Place, weather: CurrentWeather): { name: strin
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+const relativeTime = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 3600],
+  ["month", 30 * 24 * 3600],
+  ["week", 7 * 24 * 3600],
+  ["day", 24 * 3600],
+  ["hour", 3600],
+  ["minute", 60],
+];
+
+/** "hace 2 horas", "ayer"… from an ISO date. Uses the largest unit that fits. */
+export function formatRelative(iso: string, now: number = Date.now()): string {
+  const seconds = Math.round((new Date(iso).getTime() - now) / 1000);
+  for (const [unit, size] of RELATIVE_UNITS) {
+    if (Math.abs(seconds) >= size) return relativeTime.format(Math.round(seconds / size), unit);
+  }
+  return relativeTime.format(seconds, "second");
+}

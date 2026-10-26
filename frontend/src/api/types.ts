@@ -33,6 +33,27 @@ export type FavoriteCity = {
   added_at: string; // ISO 8601
 };
 
+export type AlertCondition = "rain" | "temp_below" | "temp_above";
+
+export type WeatherAlert = {
+  id: number;
+  city: City;
+  condition: AlertCondition;
+  threshold: number | null; // °C; null for rain alerts
+  is_active: boolean;
+  last_triggered: string | null; // ISO 8601, set by the Celery task
+};
+
+/**
+ * Body for POST /api/alerts/. A discriminated union: `condition` decides
+ * which variant you're holding, so TypeScript only lets you read (and
+ * forces you to send) `threshold` on temperature alerts.
+ */
+export type NewWeatherAlert = { city_id: number } & (
+  | { condition: "rain" }
+  | { condition: "temp_below" | "temp_above"; threshold: number }
+);
+
 /**
  * Anything the weather can be fetched for: a stored City (structurally a
  * Place) or a point clicked on the map, which has no id and no name yet.

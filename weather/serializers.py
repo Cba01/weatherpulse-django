@@ -66,7 +66,7 @@ class FavoriteCitySerializer(serializers.ModelSerializer):
         in the serializer context."""
         user = self.context["request"].user
         if FavoriteCity.objects.filter(user=user, city=city).exists():
-            raise serializers.ValidationError("This city is already in your favorites.")
+            raise serializers.ValidationError("Esta ciudad ya está en tus favoritos.")
         return city
 
 
@@ -114,6 +114,6 @@ class WeatherAlertSerializer(serializers.ModelSerializer):
         )
         if needs_threshold and threshold is None:
             raise serializers.ValidationError(
-                {"threshold": "This field is required for temperature-based alerts."}
+                {"threshold": "Este campo es obligatorio en las alertas de temperatura."}
             )
         return attrs

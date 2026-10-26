@@ -1,17 +1,9 @@
 import { api } from "./client";
-import type { FavoriteCity, Paginated } from "./types";
+import { fetchAllPages } from "./pagination";
+import type { FavoriteCity } from "./types";
 
-/** Every favorite, following `next` across pages (the API pages by 20). */
-export async function listFavorites(signal?: AbortSignal): Promise<FavoriteCity[]> {
-  const favorites: FavoriteCity[] = [];
-  let url: string | null = "/favorites/";
-  while (url) {
-    // `next` is absolute; axios uses an absolute URL as-is instead of joining it to baseURL.
-    const response: { data: Paginated<FavoriteCity> } = await api.get(url, { signal });
-    favorites.push(...response.data.results);
-    url = response.data.next;
-  }
-  return favorites;
+export function listFavorites(signal?: AbortSignal): Promise<FavoriteCity[]> {
+  return fetchAllPages<FavoriteCity>("/favorites/", signal);
 }
 
 export async function addFavorite(cityId: number): Promise<FavoriteCity> {

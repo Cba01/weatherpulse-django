@@ -46,6 +46,16 @@ def test_service_errors_go_through_the_exception_handler(api_client, error, stat
     assert "detail" in response.json()
 
 
+def test_provider_error_details_are_not_sent_to_the_client(api_client):
+    # A requests error's text can include the URL, and with it our appid.
+    leaky = services.ExternalAPIError("Could not reach https://api.example/?appid=SECRET")
+    with patch(GET_WEATHER, side_effect=leaky):
+        response = api_client.get("/api/weather/current/", {"lat": 0, "lon": 0})
+
+    assert response.status_code == 503
+    assert "SECRET" not in response.content.decode()
+
+
 # --- GET /api/cities/search/ -----------------------------------------------
 
 def test_search_stores_cities_and_is_idempotent(api_client):
@@ -131,6 +141,19 @@ def test_partial_update_cannot_clear_required_threshold(auth_client, user, city)
     response = auth_client.patch(f"/api/alerts/{alert.id}/", {"threshold": None}, format="json")
 
     assert response.status_code == 400
+
+
+def test_partial_update_of_is_active_keeps_existing_threshold(auth_client, user, city):
+    # What the frontend's on/off switch sends: validate() must fall back to
+    # the stored threshold instead of complaining that it's missing.
+    alert = WeatherAlert.objects.create(user=user, city=city, condition="temp_above", threshold=30)
+
+    response = auth_client.patch(f"/api/alerts/{alert.id}/", {"is_active": False}, format="json")
+
+    assert response.status_code == 200
+    alert.refresh_from_db()
+    assert alert.is_active is False
+    assert alert.threshold == 30
 
 
 def test_last_triggered_is_read_only(auth_client, user, city):
